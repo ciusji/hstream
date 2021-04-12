@@ -25,7 +25,9 @@ compile-proto-file --includeDir ./app --proto HStreamApi.proto --out ./app
 
 ```bash
 
-cabal build --extra-lib-dirs=/home/wangbin/tmp/grpc-1.35.0-install/lib 
+## cabal build --extra-lib-dirs=/home/wangbin/tmp/grpc-1.35.0-install/lib 
+
+cabal build --extra-lib-dirs=/usr/local/lib
 
 ```
 
@@ -35,10 +37,14 @@ cabal build --extra-lib-dirs=/home/wangbin/tmp/grpc-1.35.0-install/lib
 
 ## 启动 hstream-server
 
-cabal run --extra-lib-dirs=/home/wangbin/tmp/grpc-1.35.0-install/lib hstream-server 
+# cabal run --extra-lib-dirs=/home/wangbin/tmp/grpc-1.35.0-install/lib hstream-server 
+
+cabal run --extra-lib-dirs=/usr/local/lib hstream-server 
 
 ## 启动 hstream-client-example
 
-cabal run --extra-lib-dirs=/home/wangbin/tmp/grpc-1.35.0-install/lib hstream-client-example
+## cabal run --extra-lib-dirs=/home/wangbin/tmp/grpc-1.35.0-install/lib hstream-client-example
+
+cabal run --extra-lib-dirs=/usr/local/lib hstream-client-example
 
 ```
