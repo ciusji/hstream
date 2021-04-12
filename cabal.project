@@ -4,7 +4,13 @@ packages:
   hstream-store
   hstream-processing
   hstream-sql
+  hstream-server
   z-data
   z-io
   z-yaml
   z-messagepack
+  gRPC-haskell
+  gRPC-haskell/core
+  proto3-suite
+  proto3-wire
+

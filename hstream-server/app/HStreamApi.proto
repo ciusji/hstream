@@ -1,0 +1,101 @@
+syntax = "proto3";
+
+package hstream.server;
+
+service HStreamApi {
+  rpc Connect(CommandConnect) returns (CommandConnected); 
+
+//  rpc CreateProducer(CommandProducer) returns (CommandProducerSuccess);
+//
+//  rpc SendRecord(CommandSend) returns (CommandSendSuccess);
+//
+//  rpc CloseProducer(CommandCloseProducer) returns (CommandSuccess);
+//
+//  rpc Subscribe(CommandSubscribe) returns (CommandSubscribeSuccess); 
+//
+//  rpc ReceiveRecords(CommandReceive) returns (stream CommandRecord); 
+//
+//  rpc SendAck(CommandAck) returns (CommandSuccess); 
+//
+//  rpc CloseConsumer(CommandCloseConsumer) returns (CommandSuccess);
+}
+
+message CommandConnect {
+  string client_version = 1;
+  int32 protocol_version = 2;
+}
+
+message CommandConnected {
+  string server_version = 1;
+  int32 protocol_version = 2;
+}
+
+// message CommandProducer {
+//   string topic         = 1;
+//   uint64 producer_id   = 2;
+// 
+//   /// If a producer name is specified, the name will be used,
+//   /// otherwise the broker will generate a unique name
+//   string producer_name = 3;
+// }
+// 
+// /// Response from CommandProducer
+// message CommandProducerSuccess {
+//   string producer_name = 1;
+// }
+// 
+// message CommandSend {
+//   uint64 producer_id = 1;
+//   bytes payload = 2;
+// }
+// 
+// message CommandSendSuccess {
+//   uint64 producer_id = 1;
+//   uint64 sequence_id = 2;
+// }
+// 
+// message CommandCloseProducer {
+//   uint64 producer_id = 1;
+// }
+// 
+// message CommandSubscribe {
+//   enum SubType {
+//     Exclusive = 0;
+//     Shared    = 1;
+//   }
+//   string topic        = 1;
+//   string subscription = 2;
+//   SubType subType     = 3;
+// 
+//   uint64 consumer_id  = 4;
+// 
+//   /// If a consumer name is specified, the name will be used,
+//   /// otherwise the broker will generate a unique name
+//   string consumer_name = 5;
+// }
+// 
+// message CommandSubscribeSuccess {
+//   string consumer_name = 1;
+// }
+// 
+// message CommandSuccess {
+// }
+// 
+// message CommandReceive {
+//   uint64 consumer_id       = 1;
+// }
+// 
+// message CommandRecord {
+//   uint64 consumer_id       = 1;
+//   bytes payload = 2;
+// }
+// 
+// message CommandAck {
+//   uint64 consumer_id       = 1;
+//   uint64 record_id = 2;
+// }
+// 
+// message CommandCloseConsumer {
+//   uint64 consumer_id = 1;
+// }
+// 

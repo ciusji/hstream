@@ -10,3 +10,12 @@
 [submodule "z-messagepack"]
 	path = z-messagepack
 	url = git@github.com:ZHaskell/z-messagepack.git
+[submodule "gRPC-haskell"]
+	path = gRPC-haskell
+	url = git@github.com:hstreamdb/gRPC-haskell.git
+[submodule "proto3-wire"]
+	path = proto3-wire
+	url = git@github.com:awakesecurity/proto3-wire.git
+[submodule "proto3-suite"]
+	path = proto3-suite
+	url = git@github.com:awakesecurity/proto3-suite.git
