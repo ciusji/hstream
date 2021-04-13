@@ -3,7 +3,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards   #-}
 
-import           HStreamApi
+import           Hstream.Server.HStreamApi
 import           Network.GRPC.HighLevel.Generated
 
 clientConfig :: ClientConfig
@@ -22,23 +22,27 @@ main = withGRPCClient clientConfig $ \client -> do
   -- Request for the Connect RPC
   let commandConnect = CommandConnect{commandConnectClientVersion = "0.0.0.1", 
                                      commandConnectProtocolVersion = 1}
-  ClientNormalResponse CommandConnected{..} _meta1 _meta2 _status _details
-    <- hstreamApiConnect (ClientNormalRequest commandConnect 1 [])
-  putStrLn "get connected!"
+  resp <- hstreamApiConnect (ClientNormalRequest commandConnect 10 [])
+  case resp of
+    ClientNormalResponse CommandConnected{..} _meta1 _meta2 _status _details -> do 
+      putStrLn ("connect status: " ++ show _status) 
+      putStrLn ("connect details: " ++ show _details) 
+    ClientErrorResponse clientError -> putStrLn ("clientError: " ++ show clientError)
+      
 
-  -- Request for the RunningSum RPC
-  -- ClientWriterResponse reply _streamMeta1 _streamMeta2 streamStatus streamDtls
-  --   <- arithmeticRunningSum $ ClientWriterRequest 1 [] $ \send -> do
-  --       eithers <- mapM send [OneInt 1, OneInt 2, OneInt 3]
-  --                    :: IO [Either GRPCIOError ()]
-  --       case sequence eithers of
-  --         Left err -> error ("Error while streaming: " ++ show err)
-  --         Right _  -> return ()
-
-  -- case reply of
-  --   Just (OneInt y) -> print ("1 + 2 + 3 = " ++ show y)
-  --   Nothing -> putStrLn ("Client stream failed with status "
-  --                        ++ show streamStatus
-  --                        ++ " and details "
-  --                        ++ show streamDtls)
+  -- Request for the executePushQuery 
+  let queryText = "select id from demo emit changes;"
+  ClientReaderResponse _meta _stauts _details
+    <- hstreamApiExecutePushQuery (ClientReaderRequest (CommandPushQuery queryText) (-1) [] f)
   return ()
+
+  where
+    f clientCall metaData streamRecv = loop
+      where
+         loop = do
+           msg <- streamRecv 
+           case msg of
+             Left err -> putStrLn ("streaming recv error: " ++ show err) 
+             Right (Just result) -> putStrLn ("recv query result: " ++ show result) >> loop
+             Right Nothing -> putStrLn ("streaming recv terminate")
+

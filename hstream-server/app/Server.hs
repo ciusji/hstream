@@ -5,13 +5,17 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE RecordWildCards #-}
 
-import HStreamApi
+import Hstream.Server.HStreamApi
 import Network.GRPC.HighLevel.Generated
+import ThirdParty.Google.Protobuf.Struct
 
 import Data.String (fromString)
+import qualified Data.Map.Strict as Map
+import Control.Concurrent
 
 handlers :: HStreamApi ServerRequest ServerResponse
 handlers = HStreamApi { hstreamApiConnect = connectHandler
+                      , hstreamApiExecutePushQuery = executePushQueryHandler
                       }
 
 connectHandler :: ServerRequest 'Normal CommandConnect CommandConnected 
@@ -29,6 +33,22 @@ connectHandler (ServerNormalRequest _metadata CommandConnect{..}) = do
                                StatusOk
                                "connect successfully!")
 
+executePushQueryHandler :: ServerRequest 'ServerStreaming CommandPushQuery Struct 
+                        -> IO (ServerResponse 'ServerStreaming Struct)
+
+executePushQueryHandler (ServerWriterRequest _metadata CommandPushQuery{..} streamSend) = loop 0.0 
+  where 
+    loop !i = do
+      sendResult <- streamSend $ Struct $ Map.singleton "id" $ Just $ Value $ Just $ ValueKindNumberValue i 
+      case sendResult of
+        Left err -> do
+          putStrLn ("sendResult error: " ++ show err)
+          return (ServerWriterResponse 
+                                       []
+                                       StatusAborted
+                                     "send result aborted!")
+        Right _ -> putStrLn ("sendResult " ++ show i ++ " successfully!") >> threadDelay 100000 >> loop (i + 1)
+      
 
 -- runningSumHandler :: ServerRequest 'ClientStreaming OneInt OneInt
 --                      -> IO (ServerResponse 'ClientStreaming OneInt)

@@ -16,7 +16,7 @@
 
 cd hstream-server
 
-compile-proto-file --includeDir ./app --proto HStreamApi.proto --out ./app
+compile-proto-file --includeDir ./proto --proto HStreamApi.proto --out ./app
 
 ```
 

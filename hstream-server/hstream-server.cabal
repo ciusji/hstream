@@ -71,9 +71,13 @@ executable hstream-server
         bytestring
 
     -- Directories containing source files.
-    hs-source-dirs:   app
+    hs-source-dirs:   
+        app,
+        generated-src
 
-    other-modules: HStreamApi
+    other-modules: 
+        Hstream.Server.HStreamApi,
+        ThirdParty.Google.Protobuf.Struct
 
     -- Base language which the package is written in.
     default-language: Haskell2010
@@ -101,9 +105,13 @@ executable hstream-client-example
         containers,
         bytestring
     -- Directories containing source files.
-    hs-source-dirs:   app
+    hs-source-dirs:   
+        app,
+        generated-src
 
-    other-modules: HStreamApi
+    other-modules: 
+        Hstream.Server.HStreamApi,
+        ThirdParty.Google.Protobuf.Struct
 
     -- Base language which the package is written in.
     default-language: Haskell2010

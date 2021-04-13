@@ -2,8 +2,12 @@ syntax = "proto3";
 
 package hstream.server;
 
+import "third_party/google/protobuf/struct.proto";
+
 service HStreamApi {
   rpc Connect(CommandConnect) returns (CommandConnected); 
+
+  rpc ExecutePushQuery(CommandPushQuery) returns (stream Struct); 
 
 //  rpc CreateProducer(CommandProducer) returns (CommandProducerSuccess);
 //
@@ -28,6 +32,10 @@ message CommandConnect {
 message CommandConnected {
   string server_version = 1;
   int32 protocol_version = 2;
+}
+
+message CommandPushQuery {
+  string query_text = 1;
 }
 
 // message CommandProducer {
