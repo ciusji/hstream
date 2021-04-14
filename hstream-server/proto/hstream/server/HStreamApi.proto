@@ -9,6 +9,8 @@ service HStreamApi {
 
   rpc ExecutePushQuery(CommandPushQuery) returns (stream Struct); 
 
+  rpc ExecutePullQuery(CommandPullQuery) returns (CommandPullQueryResponse); 
+
 //  rpc CreateProducer(CommandProducer) returns (CommandProducerSuccess);
 //
 //  rpc SendRecord(CommandSend) returns (CommandSendSuccess);
@@ -36,6 +38,14 @@ message CommandConnected {
 
 message CommandPushQuery {
   string query_text = 1;
+}
+
+message CommandPullQuery {
+  string query_text = 1;
+}
+
+message CommandPullQueryResponse{
+  repeated Struct result_set = 1;
 }
 
 // message CommandProducer {

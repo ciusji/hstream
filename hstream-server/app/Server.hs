@@ -1,54 +1,77 @@
+{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE OverloadedLists #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE RecordWildCards #-}
 
+import Control.Concurrent
+import qualified Data.Map.Strict as Map
+import Data.String (fromString)
+import qualified Data.Vector as Vec
 import Hstream.Server.HStreamApi
 import Network.GRPC.HighLevel.Generated
 import ThirdParty.Google.Protobuf.Struct
 
-import Data.String (fromString)
-import qualified Data.Map.Strict as Map
-import Control.Concurrent
-
 handlers :: HStreamApi ServerRequest ServerResponse
-handlers = HStreamApi { hstreamApiConnect = connectHandler
-                      , hstreamApiExecutePushQuery = executePushQueryHandler
-                      }
+handlers =
+  HStreamApi
+    { hstreamApiConnect = connectHandler,
+      hstreamApiExecutePushQuery = executePushQueryHandler,
+      hstreamApiExecutePullQuery = executePullQueryHandler
+    }
 
-connectHandler :: ServerRequest 'Normal CommandConnect CommandConnected 
-              -> IO (ServerResponse 'Normal CommandConnected)
-connectHandler (ServerNormalRequest _metadata CommandConnect{..}) = do
-
+connectHandler ::
+  ServerRequest 'Normal CommandConnect CommandConnected ->
+  IO (ServerResponse 'Normal CommandConnected)
+connectHandler (ServerNormalRequest _metadata CommandConnect {..}) = do
   putStrLn "one client get connected"
 
-  let connected = CommandConnected {
-                    commandConnectedServerVersion = "0.0.1.0"
-                  , commandConnectedProtocolVersion = 1
-                  }
-  return (ServerNormalResponse connected 
-                               []
-                               StatusOk
-                               "connect successfully!")
+  let connected =
+        CommandConnected
+          { commandConnectedServerVersion = "0.0.1.0",
+            commandConnectedProtocolVersion = 1
+          }
+  return
+    ( ServerNormalResponse
+        connected
+        []
+        StatusOk
+        "connect successfully!"
+    )
 
-executePushQueryHandler :: ServerRequest 'ServerStreaming CommandPushQuery Struct 
-                        -> IO (ServerResponse 'ServerStreaming Struct)
-
-executePushQueryHandler (ServerWriterRequest _metadata CommandPushQuery{..} streamSend) = loop 0.0 
-  where 
+executePushQueryHandler ::
+  ServerRequest 'ServerStreaming CommandPushQuery Struct ->
+  IO (ServerResponse 'ServerStreaming Struct)
+executePushQueryHandler (ServerWriterRequest _metadata CommandPushQuery {..} streamSend) = loop 0.0
+  where
     loop !i = do
-      sendResult <- streamSend $ Struct $ Map.singleton "id" $ Just $ Value $ Just $ ValueKindNumberValue i 
+      sendResult <- streamSend $ Struct $ Map.singleton "id" $ Just $ Value $ Just $ ValueKindNumberValue i
       case sendResult of
         Left err -> do
           putStrLn ("sendResult error: " ++ show err)
-          return (ServerWriterResponse 
-                                       []
-                                       StatusAborted
-                                     "send result aborted!")
+          return
+            ( ServerWriterResponse
+                []
+                StatusAborted
+                "send result aborted!"
+            )
         Right _ -> putStrLn ("sendResult " ++ show i ++ " successfully!") >> threadDelay 1000000 >> loop (i + 1)
-      
+
+executePullQueryHandler ::
+  ServerRequest 'Normal CommandPullQuery CommandPullQueryResponse ->
+  IO (ServerResponse 'Normal CommandPullQueryResponse)
+executePullQueryHandler (ServerNormalRequest _metadata CommandPullQuery {..}) = do
+  putStrLn ("pull_query_text: " ++ show commandPullQueryQueryText)
+
+  let resultSet = Vec.generate 5 (Struct . Map.singleton "id" . Just . Value . Just . ValueKindNumberValue . fromIntegral)
+  return
+    ( ServerNormalResponse
+        (CommandPullQueryResponse resultSet)
+        []
+        StatusOk
+        "connect successfully!"
+    )
 
 -- runningSumHandler :: ServerRequest 'ClientStreaming OneInt OneInt
 --                      -> IO (ServerResponse 'ClientStreaming OneInt)
@@ -68,7 +91,7 @@ executePushQueryHandler (ServerWriterRequest _metadata CommandPushQuery{..} stre
 --                                            []
 --                                            StatusOk
 --                                            "")
--- 
+--
 options :: ServiceOptions
 options = defaultServiceOptions
 
