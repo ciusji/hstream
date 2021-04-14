@@ -7,9 +7,16 @@ import "third_party/google/protobuf/struct.proto";
 service HStreamApi {
   rpc Connect(CommandConnect) returns (CommandConnected); 
 
+  // only for push query
   rpc ExecutePushQuery(CommandPushQuery) returns (stream Struct); 
 
-  rpc ExecutePullQuery(CommandPullQuery) returns (CommandPullQueryResponse); 
+  // for execute any sql stmt except push query, 
+  // e.g., insert, create, show/list, select(without emit changes) ...
+  rpc ExecuteQuery(CommandQuery) returns (CommandQueryResponse); 
+
+  // rpc ExecuteCreateStream(CommandCreateStream) returns (CommandSuccess); 
+
+  // rpc ExecuteDropStream(CommandDropStream) returns (CommandSuccess); 
 
 //  rpc CreateProducer(CommandProducer) returns (CommandProducerSuccess);
 //
@@ -40,12 +47,22 @@ message CommandPushQuery {
   string query_text = 1;
 }
 
-message CommandPullQuery {
-  string query_text = 1;
+message CommandQuery {
+  string stmt_text = 1;
 }
 
-message CommandPullQueryResponse{
-  repeated Struct result_set = 1;
+message CommandQueryResponse{
+  oneof kind {
+    CommandSuccess success = 1;
+    CommandQueryResultSet result_set = 2;
+  }
+}
+
+message CommandQueryResultSet {
+    repeated Struct result_set = 1;
+}
+
+message CommandSuccess {
 }
 
 // message CommandProducer {

@@ -34,11 +34,11 @@ main = withGRPCClient clientConfig $ \client -> do
       putStrLn ("connect details: " ++ show _details)
     ClientErrorResponse clientError -> putStrLn ("clientError: " ++ show clientError)
 
-  -- Request for the executePullQuery
-  resp <- hstreamApiExecutePullQuery (ClientNormalRequest (CommandPullQuery "select id from demoTable") 1 [])
+  -- Request for the executeQuery
+  resp <- hstreamApiExecuteQuery (ClientNormalRequest (CommandQuery "select id from demoTable") 1 [])
   case resp of
-    ClientNormalResponse CommandPullQueryResponse {..} _meta1 _meta2 _status _details -> do
-      putStrLn ("pull query results: " ++ show commandPullQueryResponseResultSet)
+    ClientNormalResponse (CommandQueryResponse (Just (CommandQueryResponseKindResultSet resultSet))) _meta1 _meta2 _status _details -> do
+      putStrLn ("pull query results: " ++ show resultSet)
     ClientErrorResponse clientError -> putStrLn ("clientError: " ++ show clientError)
 
   -- Request for the executePushQuery

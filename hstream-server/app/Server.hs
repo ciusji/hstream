@@ -18,7 +18,7 @@ handlers =
   HStreamApi
     { hstreamApiConnect = connectHandler,
       hstreamApiExecutePushQuery = executePushQueryHandler,
-      hstreamApiExecutePullQuery = executePullQueryHandler
+      hstreamApiExecuteQuery = executeQueryHandler
     }
 
 connectHandler ::
@@ -58,19 +58,19 @@ executePushQueryHandler (ServerWriterRequest _metadata CommandPushQuery {..} str
             )
         Right _ -> putStrLn ("sendResult " ++ show i ++ " successfully!") >> threadDelay 1000000 >> loop (i + 1)
 
-executePullQueryHandler ::
-  ServerRequest 'Normal CommandPullQuery CommandPullQueryResponse ->
-  IO (ServerResponse 'Normal CommandPullQueryResponse)
-executePullQueryHandler (ServerNormalRequest _metadata CommandPullQuery {..}) = do
-  putStrLn ("pull_query_text: " ++ show commandPullQueryQueryText)
+executeQueryHandler ::
+  ServerRequest 'Normal CommandQuery CommandQueryResponse ->
+  IO (ServerResponse 'Normal CommandQueryResponse)
+executeQueryHandler (ServerNormalRequest _metadata CommandQuery {..}) = do
+  putStrLn ("query stmt: " ++ show commandQueryStmtText)
 
   let resultSet = Vec.generate 5 (Struct . Map.singleton "id" . Just . Value . Just . ValueKindNumberValue . fromIntegral)
   return
     ( ServerNormalResponse
-        (CommandPullQueryResponse resultSet)
+        (CommandQueryResponse (Just $ CommandQueryResponseKindResultSet $ CommandQueryResultSet resultSet))
         []
         StatusOk
-        "connect successfully!"
+        ""
     )
 
 -- runningSumHandler :: ServerRequest 'ClientStreaming OneInt OneInt

@@ -57,14 +57,14 @@ data HStreamApi request response = HStreamApi{hstreamApiConnect ::
                                                 Hs.IO
                                                   (response 'HsGRPC.ServerStreaming
                                                      ThirdParty.Google.Protobuf.Struct.Struct),
-                                              hstreamApiExecutePullQuery ::
+                                              hstreamApiExecuteQuery ::
                                               request 'HsGRPC.Normal
-                                                Hstream.Server.HStreamApi.CommandPullQuery
-                                                Hstream.Server.HStreamApi.CommandPullQueryResponse
+                                                Hstream.Server.HStreamApi.CommandQuery
+                                                Hstream.Server.HStreamApi.CommandQueryResponse
                                                 ->
                                                 Hs.IO
                                                   (response 'HsGRPC.Normal
-                                                     Hstream.Server.HStreamApi.CommandPullQueryResponse)}
+                                                     Hstream.Server.HStreamApi.CommandQueryResponse)}
                                  deriving Hs.Generic
  
 hstreamApiServer ::
@@ -73,7 +73,7 @@ hstreamApiServer ::
 hstreamApiServer
   HStreamApi{hstreamApiConnect = hstreamApiConnect,
              hstreamApiExecutePushQuery = hstreamApiExecutePushQuery,
-             hstreamApiExecutePullQuery = hstreamApiExecutePullQuery}
+             hstreamApiExecuteQuery = hstreamApiExecuteQuery}
   (ServiceOptions serverHost serverPort useCompression
      userAgentPrefix userAgentSuffix initialMetadata sslConfig logger
      serverMaxReceiveMessageLength)
@@ -83,9 +83,8 @@ hstreamApiServer
                                    (HsGRPC.MethodName "/hstream.server.HStreamApi/Connect")
                                    (HsGRPC.convertGeneratedServerHandler hstreamApiConnect)),
                                 (HsGRPC.UnaryHandler
-                                   (HsGRPC.MethodName "/hstream.server.HStreamApi/ExecutePullQuery")
-                                   (HsGRPC.convertGeneratedServerHandler
-                                      hstreamApiExecutePullQuery))],
+                                   (HsGRPC.MethodName "/hstream.server.HStreamApi/ExecuteQuery")
+                                   (HsGRPC.convertGeneratedServerHandler hstreamApiExecuteQuery))],
                              HsGRPC.optClientStreamHandlers = [],
                              HsGRPC.optServerStreamHandlers =
                                [(HsGRPC.ServerStreamHandler
@@ -115,7 +114,7 @@ hstreamApiClient client
       <*>
       ((Hs.pure (HsGRPC.clientRequest client)) <*>
          (HsGRPC.clientRegisterMethod client
-            (HsGRPC.MethodName "/hstream.server.HStreamApi/ExecutePullQuery")))
+            (HsGRPC.MethodName "/hstream.server.HStreamApi/ExecuteQuery")))
  
 data CommandConnect = CommandConnect{commandConnectClientVersion ::
                                      Hs.Text,
@@ -350,91 +349,236 @@ instance HsJSONPB.ToSchema CommandPushQuery where
                                                        [("query_text",
                                                          commandPushQueryQueryText)]}})
  
-newtype CommandPullQuery = CommandPullQuery{commandPullQueryQueryText
-                                            :: Hs.Text}
-                           deriving (Hs.Show, Hs.Eq, Hs.Ord, Hs.Generic, Hs.NFData)
+newtype CommandQuery = CommandQuery{commandQueryStmtText ::
+                                    Hs.Text}
+                       deriving (Hs.Show, Hs.Eq, Hs.Ord, Hs.Generic, Hs.NFData)
  
-instance HsProtobuf.Named CommandPullQuery where
-        nameOf _ = (Hs.fromString "CommandPullQuery")
+instance HsProtobuf.Named CommandQuery where
+        nameOf _ = (Hs.fromString "CommandQuery")
  
-instance HsProtobuf.HasDefault CommandPullQuery
+instance HsProtobuf.HasDefault CommandQuery
  
-instance HsProtobuf.Message CommandPullQuery where
+instance HsProtobuf.Message CommandQuery where
         encodeMessage _
-          CommandPullQuery{commandPullQueryQueryText =
-                             commandPullQueryQueryText}
+          CommandQuery{commandQueryStmtText = commandQueryStmtText}
           = (Hs.mconcat
                [(HsProtobuf.encodeMessageField (HsProtobuf.FieldNumber 1)
-                   commandPullQueryQueryText)])
+                   commandQueryStmtText)])
         decodeMessage _
-          = (Hs.pure CommandPullQuery) <*>
+          = (Hs.pure CommandQuery) <*>
               (HsProtobuf.at HsProtobuf.decodeMessageField
                  (HsProtobuf.FieldNumber 1))
         dotProto _
           = [(HsProtobuf.DotProtoField (HsProtobuf.FieldNumber 1)
                 (HsProtobuf.Prim HsProtobuf.String)
-                (HsProtobuf.Single "query_text")
+                (HsProtobuf.Single "stmt_text")
                 []
                 "")]
  
-instance HsJSONPB.ToJSONPB CommandPullQuery where
-        toJSONPB (CommandPullQuery f1)
-          = (HsJSONPB.object ["query_text" .= f1])
-        toEncodingPB (CommandPullQuery f1)
-          = (HsJSONPB.pairs ["query_text" .= f1])
+instance HsJSONPB.ToJSONPB CommandQuery where
+        toJSONPB (CommandQuery f1) = (HsJSONPB.object ["stmt_text" .= f1])
+        toEncodingPB (CommandQuery f1)
+          = (HsJSONPB.pairs ["stmt_text" .= f1])
  
-instance HsJSONPB.FromJSONPB CommandPullQuery where
+instance HsJSONPB.FromJSONPB CommandQuery where
         parseJSONPB
-          = (HsJSONPB.withObject "CommandPullQuery"
-               (\ obj -> (Hs.pure CommandPullQuery) <*> obj .: "query_text"))
+          = (HsJSONPB.withObject "CommandQuery"
+               (\ obj -> (Hs.pure CommandQuery) <*> obj .: "stmt_text"))
  
-instance HsJSONPB.ToJSON CommandPullQuery where
+instance HsJSONPB.ToJSON CommandQuery where
         toJSON = HsJSONPB.toAesonValue
         toEncoding = HsJSONPB.toAesonEncoding
  
-instance HsJSONPB.FromJSON CommandPullQuery where
+instance HsJSONPB.FromJSON CommandQuery where
         parseJSON = HsJSONPB.parseJSONPB
  
-instance HsJSONPB.ToSchema CommandPullQuery where
+instance HsJSONPB.ToSchema CommandQuery where
         declareNamedSchema _
-          = do let declare_query_text = HsJSONPB.declareSchemaRef
-               commandPullQueryQueryText <- declare_query_text Proxy.Proxy
-               let _ = Hs.pure CommandPullQuery <*>
-                         HsJSONPB.asProxy declare_query_text
+          = do let declare_stmt_text = HsJSONPB.declareSchemaRef
+               commandQueryStmtText <- declare_stmt_text Proxy.Proxy
+               let _ = Hs.pure CommandQuery <*> HsJSONPB.asProxy declare_stmt_text
                Hs.return
                  (HsJSONPB.NamedSchema{HsJSONPB._namedSchemaName =
-                                         Hs.Just "CommandPullQuery",
+                                         Hs.Just "CommandQuery",
                                        HsJSONPB._namedSchemaSchema =
                                          Hs.mempty{HsJSONPB._schemaParamSchema =
                                                      Hs.mempty{HsJSONPB._paramSchemaType =
                                                                  Hs.Just HsJSONPB.SwaggerObject},
                                                    HsJSONPB._schemaProperties =
                                                      HsJSONPB.insOrdFromList
-                                                       [("query_text",
-                                                         commandPullQueryQueryText)]}})
+                                                       [("stmt_text", commandQueryStmtText)]}})
  
-newtype CommandPullQueryResponse = CommandPullQueryResponse{commandPullQueryResponseResultSet
-                                                            ::
-                                                            Hs.Vector
-                                                              ThirdParty.Google.Protobuf.Struct.Struct}
-                                   deriving (Hs.Show, Hs.Eq, Hs.Ord, Hs.Generic, Hs.NFData)
+newtype CommandQueryResponse = CommandQueryResponse{commandQueryResponseKind
+                                                    :: Hs.Maybe CommandQueryResponseKind}
+                               deriving (Hs.Show, Hs.Eq, Hs.Ord, Hs.Generic, Hs.NFData)
  
-instance HsProtobuf.Named CommandPullQueryResponse where
-        nameOf _ = (Hs.fromString "CommandPullQueryResponse")
+instance HsProtobuf.Named CommandQueryResponse where
+        nameOf _ = (Hs.fromString "CommandQueryResponse")
  
-instance HsProtobuf.HasDefault CommandPullQueryResponse
+instance HsProtobuf.HasDefault CommandQueryResponse
  
-instance HsProtobuf.Message CommandPullQueryResponse where
+instance HsProtobuf.Message CommandQueryResponse where
         encodeMessage _
-          CommandPullQueryResponse{commandPullQueryResponseResultSet =
-                                     commandPullQueryResponseResultSet}
+          CommandQueryResponse{commandQueryResponseKind =
+                                 commandQueryResponseKind}
+          = (Hs.mconcat
+               [case commandQueryResponseKind of
+                    Hs.Nothing -> Hs.mempty
+                    Hs.Just x
+                      -> case x of
+                             CommandQueryResponseKindSuccess y
+                               -> (HsProtobuf.encodeMessageField (HsProtobuf.FieldNumber 1)
+                                     (Hs.coerce @(Hs.Maybe Hstream.Server.HStreamApi.CommandSuccess)
+                                        @(HsProtobuf.Nested Hstream.Server.HStreamApi.CommandSuccess)
+                                        (Hs.Just y)))
+                             CommandQueryResponseKindResultSet y
+                               -> (HsProtobuf.encodeMessageField (HsProtobuf.FieldNumber 2)
+                                     (Hs.coerce
+                                        @(Hs.Maybe Hstream.Server.HStreamApi.CommandQueryResultSet)
+                                        @(HsProtobuf.Nested Hstream.Server.HStreamApi.CommandQueryResultSet)
+                                        (Hs.Just y)))])
+        decodeMessage _
+          = (Hs.pure CommandQueryResponse) <*>
+              (HsProtobuf.oneof Hs.Nothing
+                 [((HsProtobuf.FieldNumber 1),
+                   (Hs.pure (Hs.fmap CommandQueryResponseKindSuccess)) <*>
+                     (Hs.coerce
+                        @(_ (HsProtobuf.Nested Hstream.Server.HStreamApi.CommandSuccess))
+                        @(_ (Hs.Maybe Hstream.Server.HStreamApi.CommandSuccess))
+                        HsProtobuf.decodeMessageField)),
+                  ((HsProtobuf.FieldNumber 2),
+                   (Hs.pure (Hs.fmap CommandQueryResponseKindResultSet)) <*>
+                     (Hs.coerce
+                        @(_ (HsProtobuf.Nested Hstream.Server.HStreamApi.CommandQueryResultSet))
+                        @(_ (Hs.Maybe Hstream.Server.HStreamApi.CommandQueryResultSet))
+                        HsProtobuf.decodeMessageField))])
+        dotProto _ = []
+ 
+instance HsJSONPB.ToJSONPB CommandQueryResponse where
+        toJSONPB (CommandQueryResponse f1_or_f2)
+          = (HsJSONPB.object
+               [(let encodeKind
+                       = (case f1_or_f2 of
+                              Hs.Just (CommandQueryResponseKindSuccess f1)
+                                -> (HsJSONPB.pair "success" f1)
+                              Hs.Just (CommandQueryResponseKindResultSet f2)
+                                -> (HsJSONPB.pair "result_set" f2)
+                              Hs.Nothing -> Hs.mempty)
+                   in
+                   \ options ->
+                     if HsJSONPB.optEmitNamedOneof options then
+                       ("kind" .= (HsJSONPB.objectOrNull [encodeKind] options)) options
+                       else encodeKind options)])
+        toEncodingPB (CommandQueryResponse f1_or_f2)
+          = (HsJSONPB.pairs
+               [(let encodeKind
+                       = (case f1_or_f2 of
+                              Hs.Just (CommandQueryResponseKindSuccess f1)
+                                -> (HsJSONPB.pair "success" f1)
+                              Hs.Just (CommandQueryResponseKindResultSet f2)
+                                -> (HsJSONPB.pair "result_set" f2)
+                              Hs.Nothing -> Hs.mempty)
+                   in
+                   \ options ->
+                     if HsJSONPB.optEmitNamedOneof options then
+                       ("kind" .= (HsJSONPB.pairsOrNull [encodeKind] options)) options
+                       else encodeKind options)])
+ 
+instance HsJSONPB.FromJSONPB CommandQueryResponse where
+        parseJSONPB
+          = (HsJSONPB.withObject "CommandQueryResponse"
+               (\ obj ->
+                  (Hs.pure CommandQueryResponse) <*>
+                    (let parseKind parseObj
+                           = Hs.msum
+                               [Hs.Just Hs.. CommandQueryResponseKindSuccess <$>
+                                  (HsJSONPB.parseField parseObj "success"),
+                                Hs.Just Hs.. CommandQueryResponseKindResultSet <$>
+                                  (HsJSONPB.parseField parseObj "result_set"),
+                                Hs.pure Hs.Nothing]
+                       in
+                       ((obj .: "kind") Hs.>>= (HsJSONPB.withObject "kind" parseKind)) <|>
+                         (parseKind obj))))
+ 
+instance HsJSONPB.ToJSON CommandQueryResponse where
+        toJSON = HsJSONPB.toAesonValue
+        toEncoding = HsJSONPB.toAesonEncoding
+ 
+instance HsJSONPB.FromJSON CommandQueryResponse where
+        parseJSON = HsJSONPB.parseJSONPB
+ 
+instance HsJSONPB.ToSchema CommandQueryResponse where
+        declareNamedSchema _
+          = do let declare_kind = HsJSONPB.declareSchemaRef
+               commandQueryResponseKind <- declare_kind Proxy.Proxy
+               let _ = Hs.pure CommandQueryResponse <*>
+                         HsJSONPB.asProxy declare_kind
+               Hs.return
+                 (HsJSONPB.NamedSchema{HsJSONPB._namedSchemaName =
+                                         Hs.Just "CommandQueryResponse",
+                                       HsJSONPB._namedSchemaSchema =
+                                         Hs.mempty{HsJSONPB._schemaParamSchema =
+                                                     Hs.mempty{HsJSONPB._paramSchemaType =
+                                                                 Hs.Just HsJSONPB.SwaggerObject},
+                                                   HsJSONPB._schemaProperties =
+                                                     HsJSONPB.insOrdFromList
+                                                       [("kind", commandQueryResponseKind)]}})
+ 
+data CommandQueryResponseKind = CommandQueryResponseKindSuccess Hstream.Server.HStreamApi.CommandSuccess
+                              | CommandQueryResponseKindResultSet Hstream.Server.HStreamApi.CommandQueryResultSet
+                              deriving (Hs.Show, Hs.Eq, Hs.Ord, Hs.Generic, Hs.NFData)
+ 
+instance HsProtobuf.Named CommandQueryResponseKind where
+        nameOf _ = (Hs.fromString "CommandQueryResponseKind")
+ 
+instance HsJSONPB.ToSchema CommandQueryResponseKind where
+        declareNamedSchema _
+          = do let declare_success = HsJSONPB.declareSchemaRef
+               commandQueryResponseKindSuccess <- declare_success Proxy.Proxy
+               let _ = Hs.pure CommandQueryResponseKindSuccess <*>
+                         HsJSONPB.asProxy declare_success
+               let declare_result_set = HsJSONPB.declareSchemaRef
+               commandQueryResponseKindResultSet <- declare_result_set Proxy.Proxy
+               let _ = Hs.pure CommandQueryResponseKindResultSet <*>
+                         HsJSONPB.asProxy declare_result_set
+               Hs.return
+                 (HsJSONPB.NamedSchema{HsJSONPB._namedSchemaName =
+                                         Hs.Just "CommandQueryResponseKind",
+                                       HsJSONPB._namedSchemaSchema =
+                                         Hs.mempty{HsJSONPB._schemaParamSchema =
+                                                     Hs.mempty{HsJSONPB._paramSchemaType =
+                                                                 Hs.Just HsJSONPB.SwaggerObject},
+                                                   HsJSONPB._schemaProperties =
+                                                     HsJSONPB.insOrdFromList
+                                                       [("success",
+                                                         commandQueryResponseKindSuccess),
+                                                        ("result_set",
+                                                         commandQueryResponseKindResultSet)],
+                                                   HsJSONPB._schemaMinProperties = Hs.Just 1,
+                                                   HsJSONPB._schemaMaxProperties = Hs.Just 1}})
+ 
+newtype CommandQueryResultSet = CommandQueryResultSet{commandQueryResultSetResultSet
+                                                      ::
+                                                      Hs.Vector
+                                                        ThirdParty.Google.Protobuf.Struct.Struct}
+                                deriving (Hs.Show, Hs.Eq, Hs.Ord, Hs.Generic, Hs.NFData)
+ 
+instance HsProtobuf.Named CommandQueryResultSet where
+        nameOf _ = (Hs.fromString "CommandQueryResultSet")
+ 
+instance HsProtobuf.HasDefault CommandQueryResultSet
+ 
+instance HsProtobuf.Message CommandQueryResultSet where
+        encodeMessage _
+          CommandQueryResultSet{commandQueryResultSetResultSet =
+                                  commandQueryResultSetResultSet}
           = (Hs.mconcat
                [(HsProtobuf.encodeMessageField (HsProtobuf.FieldNumber 1)
                    (Hs.coerce @(Hs.Vector ThirdParty.Google.Protobuf.Struct.Struct)
                       @(HsProtobuf.NestedVec ThirdParty.Google.Protobuf.Struct.Struct)
-                      commandPullQueryResponseResultSet))])
+                      commandQueryResultSetResultSet))])
         decodeMessage _
-          = (Hs.pure CommandPullQueryResponse) <*>
+          = (Hs.pure CommandQueryResultSet) <*>
               (Hs.coerce
                  @(_ (HsProtobuf.NestedVec ThirdParty.Google.Protobuf.Struct.Struct))
                  @(_ (Hs.Vector ThirdParty.Google.Protobuf.Struct.Struct))
@@ -448,34 +592,33 @@ instance HsProtobuf.Message CommandPullQueryResponse where
                 []
                 "")]
  
-instance HsJSONPB.ToJSONPB CommandPullQueryResponse where
-        toJSONPB (CommandPullQueryResponse f1)
+instance HsJSONPB.ToJSONPB CommandQueryResultSet where
+        toJSONPB (CommandQueryResultSet f1)
           = (HsJSONPB.object ["result_set" .= f1])
-        toEncodingPB (CommandPullQueryResponse f1)
+        toEncodingPB (CommandQueryResultSet f1)
           = (HsJSONPB.pairs ["result_set" .= f1])
  
-instance HsJSONPB.FromJSONPB CommandPullQueryResponse where
+instance HsJSONPB.FromJSONPB CommandQueryResultSet where
         parseJSONPB
-          = (HsJSONPB.withObject "CommandPullQueryResponse"
-               (\ obj ->
-                  (Hs.pure CommandPullQueryResponse) <*> obj .: "result_set"))
+          = (HsJSONPB.withObject "CommandQueryResultSet"
+               (\ obj -> (Hs.pure CommandQueryResultSet) <*> obj .: "result_set"))
  
-instance HsJSONPB.ToJSON CommandPullQueryResponse where
+instance HsJSONPB.ToJSON CommandQueryResultSet where
         toJSON = HsJSONPB.toAesonValue
         toEncoding = HsJSONPB.toAesonEncoding
  
-instance HsJSONPB.FromJSON CommandPullQueryResponse where
+instance HsJSONPB.FromJSON CommandQueryResultSet where
         parseJSON = HsJSONPB.parseJSONPB
  
-instance HsJSONPB.ToSchema CommandPullQueryResponse where
+instance HsJSONPB.ToSchema CommandQueryResultSet where
         declareNamedSchema _
           = do let declare_result_set = HsJSONPB.declareSchemaRef
-               commandPullQueryResponseResultSet <- declare_result_set Proxy.Proxy
-               let _ = Hs.pure CommandPullQueryResponse <*>
+               commandQueryResultSetResultSet <- declare_result_set Proxy.Proxy
+               let _ = Hs.pure CommandQueryResultSet <*>
                          HsJSONPB.asProxy declare_result_set
                Hs.return
                  (HsJSONPB.NamedSchema{HsJSONPB._namedSchemaName =
-                                         Hs.Just "CommandPullQueryResponse",
+                                         Hs.Just "CommandQueryResultSet",
                                        HsJSONPB._namedSchemaSchema =
                                          Hs.mempty{HsJSONPB._schemaParamSchema =
                                                      Hs.mempty{HsJSONPB._paramSchemaType =
@@ -483,4 +626,45 @@ instance HsJSONPB.ToSchema CommandPullQueryResponse where
                                                    HsJSONPB._schemaProperties =
                                                      HsJSONPB.insOrdFromList
                                                        [("result_set",
-                                                         commandPullQueryResponseResultSet)]}})
+                                                         commandQueryResultSetResultSet)]}})
+ 
+data CommandSuccess = CommandSuccess{}
+                    deriving (Hs.Show, Hs.Eq, Hs.Ord, Hs.Generic, Hs.NFData)
+ 
+instance HsProtobuf.Named CommandSuccess where
+        nameOf _ = (Hs.fromString "CommandSuccess")
+ 
+instance HsProtobuf.HasDefault CommandSuccess
+ 
+instance HsProtobuf.Message CommandSuccess where
+        encodeMessage _ CommandSuccess{} = (Hs.mconcat [])
+        decodeMessage _ = (Hs.pure CommandSuccess)
+        dotProto _ = []
+ 
+instance HsJSONPB.ToJSONPB CommandSuccess where
+        toJSONPB (CommandSuccess) = (HsJSONPB.object [])
+        toEncodingPB (CommandSuccess) = (HsJSONPB.pairs [])
+ 
+instance HsJSONPB.FromJSONPB CommandSuccess where
+        parseJSONPB
+          = (HsJSONPB.withObject "CommandSuccess"
+               (\ obj -> (Hs.pure CommandSuccess)))
+ 
+instance HsJSONPB.ToJSON CommandSuccess where
+        toJSON = HsJSONPB.toAesonValue
+        toEncoding = HsJSONPB.toAesonEncoding
+ 
+instance HsJSONPB.FromJSON CommandSuccess where
+        parseJSON = HsJSONPB.parseJSONPB
+ 
+instance HsJSONPB.ToSchema CommandSuccess where
+        declareNamedSchema _
+          = do Hs.return
+                 (HsJSONPB.NamedSchema{HsJSONPB._namedSchemaName =
+                                         Hs.Just "CommandSuccess",
+                                       HsJSONPB._namedSchemaSchema =
+                                         Hs.mempty{HsJSONPB._schemaParamSchema =
+                                                     Hs.mempty{HsJSONPB._paramSchemaType =
+                                                                 Hs.Just HsJSONPB.SwaggerObject},
+                                                   HsJSONPB._schemaProperties =
+                                                     HsJSONPB.insOrdFromList []}})
