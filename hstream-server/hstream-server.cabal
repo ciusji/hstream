@@ -79,6 +79,8 @@ executable hstream-server
         Hstream.Server.HStreamApi,
         ThirdParty.Google.Protobuf.Struct
 
+    ghc-options: -threaded
+
     -- Base language which the package is written in.
     default-language: Haskell2010
 
@@ -112,6 +114,8 @@ executable hstream-client-example
     other-modules: 
         Hstream.Server.HStreamApi,
         ThirdParty.Google.Protobuf.Struct
+
+    ghc-options: -threaded
 
     -- Base language which the package is written in.
     default-language: Haskell2010

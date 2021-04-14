@@ -47,7 +47,7 @@ executePushQueryHandler (ServerWriterRequest _metadata CommandPushQuery{..} stre
                                        []
                                        StatusAborted
                                      "send result aborted!")
-        Right _ -> putStrLn ("sendResult " ++ show i ++ " successfully!") >> threadDelay 100000 >> loop (i + 1)
+        Right _ -> putStrLn ("sendResult " ++ show i ++ " successfully!") >> threadDelay 1000000 >> loop (i + 1)
       
 
 -- runningSumHandler :: ServerRequest 'ClientStreaming OneInt OneInt
