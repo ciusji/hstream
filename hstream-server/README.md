@@ -16,12 +16,21 @@
 
 cd hstream-server
 
-compile-proto-file --includeDir ./proto --proto HStreamApi.proto --out ./app
+compile-proto-file --includeDir ./proto --proto hstream/server/HStreamApi.proto --out ./generated-src
 
 ```
 
 然后用 cabal build
 
+**注意：** 如果 grpc 安装在非系统默认路径，需要首先设置 `LD_LIBRARY_PATH`，如下：
+
+``` bash
+
+export LD_LIBRARY_PATH=/home/wangbin/tmp/grpc-1.35.0-install/lib:$LD_LIBRARY_PATH
+
+```
+
+并在运行 cabal 命令的时候指定 `--extra-lib-dirs`:
 
 ```bash
 
@@ -48,3 +57,5 @@ cabal run --extra-lib-dirs=/usr/local/lib hstream-server
 cabal run --extra-lib-dirs=/usr/local/lib hstream-client-example
 
 ```
+
+也可以通过在 `~/.cabal/config` 配置文件里面指定 `--extra-lib-dirs`，这样 cabal 命令在运行的时候就无需指定这个参数了。
