@@ -74,3 +74,9 @@ cradle:
 
     - path: "z-yaml/./"
       component: "lib:Z-YAML"
+
+    - path: "hstream-server/app/Client.hs"
+      component: "hstream-server:exe:hstream-client-example"
+
+    - path: "hstream-server/app/Server.hs"
+      component: "hstream-server:exe:hstream-server"
