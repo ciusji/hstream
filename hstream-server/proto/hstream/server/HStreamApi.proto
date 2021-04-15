@@ -14,6 +14,10 @@ service HStreamApi {
   // e.g., insert, create, show/list, select(without emit changes) ...
   rpc ExecuteQuery(CommandQuery) returns (CommandQueryResponse); 
 
+  // for executing a create stream command
+  // e.g. CREATE STREAM demoSink AS SELECT * FROM source1 EMIT CHANGES WITH (FORMAT = "JSON");
+  rpc CreateStreamTask(CommandStreamTask) returns (CommandStreamTaskResponse);
+
   // rpc ExecuteCreateStream(CommandCreateStream) returns (CommandSuccess); 
 
   // rpc ExecuteDropStream(CommandDropStream) returns (CommandSuccess); 
@@ -31,6 +35,14 @@ service HStreamApi {
 //  rpc SendAck(CommandAck) returns (CommandSuccess); 
 //
 //  rpc CloseConsumer(CommandCloseConsumer) returns (CommandSuccess);
+}
+
+message CommandStreamTask{
+  string command_sql = 1;
+}
+
+message CommandStreamTaskResponse{
+  string command_resp = 1;
 }
 
 message CommandConnect {

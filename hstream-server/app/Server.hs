@@ -18,7 +18,7 @@ import Hstream.Server.HStreamApi
       CommandConnected(..),
       CommandConnect(..),
       HStreamApi(..),
-      hstreamApiServer )
+      hstreamApiServer, CommandStreamTask, CommandStreamTaskResponse )
 import Network.GRPC.HighLevel.Generated
     ( defaultServiceOptions,
       ServiceOptions,
@@ -88,6 +88,11 @@ executeQueryHandler (ServerNormalRequest _metadata CommandQuery {..}) = do
         StatusOk
         ""
     )
+
+executeCreateStreamTaskHandler ::
+  ServerRequest 'Normal CommandStreamTask CommandStreamTaskResponse ->
+  IO (ServerResponse  'Normal CommandStreamTaskResponse )
+executeCreateStreamTaskHandler = undefined
 
 -- runningSumHandler :: ServerRequest 'ClientStreaming OneInt OneInt
 --                      -> IO (ServerResponse 'ClientStreaming OneInt)
