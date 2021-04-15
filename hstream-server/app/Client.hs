@@ -4,7 +4,23 @@
 {-# LANGUAGE RecordWildCards #-}
 
 import Hstream.Server.HStreamApi
+    ( CommandQueryResponseKind(CommandQueryResponseKindResultSet),
+      CommandQueryResponse(CommandQueryResponse),
+      CommandQuery(CommandQuery),
+      CommandPushQuery(CommandPushQuery),
+      CommandConnected(CommandConnected, commandConnectedProtocolVersion,
+                       commandConnectedServerVersion),
+      CommandConnect(CommandConnect, commandConnectClientVersion,
+                     commandConnectProtocolVersion),
+      HStreamApi(HStreamApi, hstreamApiExecuteQuery,
+                 hstreamApiExecutePushQuery, hstreamApiConnect),
+      hstreamApiClient )
 import Network.GRPC.HighLevel.Generated
+    ( withGRPCClient,
+      ClientRequest(ClientReaderRequest, ClientNormalRequest),
+      ClientResult(ClientReaderResponse, ClientNormalResponse,
+                   ClientErrorResponse),
+      ClientConfig(..) )
 
 clientConfig :: ClientConfig
 clientConfig =

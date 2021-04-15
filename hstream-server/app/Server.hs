@@ -5,13 +5,29 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-import Control.Concurrent
+import Control.Concurrent ( threadDelay )
 import qualified Data.Map.Strict as Map
 import Data.String (fromString)
 import qualified Data.Vector as Vec
 import Hstream.Server.HStreamApi
+    ( CommandQueryResultSet(CommandQueryResultSet),
+      CommandQueryResponseKind(CommandQueryResponseKindResultSet),
+      CommandQueryResponse(CommandQueryResponse),
+      CommandQuery(..),
+      CommandPushQuery(..),
+      CommandConnected(..),
+      CommandConnect(..),
+      HStreamApi(..),
+      hstreamApiServer )
 import Network.GRPC.HighLevel.Generated
+    ( defaultServiceOptions,
+      ServiceOptions,
+      ServerRequest(ServerNormalRequest, ServerWriterRequest),
+      ServerResponse(ServerNormalResponse, ServerWriterResponse),
+      GRPCMethodType(Normal, ServerStreaming),
+      StatusCode(StatusOk, StatusAborted) )
 import ThirdParty.Google.Protobuf.Struct
+    ( ValueKind(ValueKindNumberValue), Value(Value), Struct(Struct) )
 
 handlers :: HStreamApi ServerRequest ServerResponse
 handlers =
